@@ -38,12 +38,12 @@ export default {
   watch: {
     error: function (newVal, oldVal) {
       if (!newVal) {
-        Vue.nextTick(() => { this.$el.querySelector('input.add').focus() }, 0)
+        Vue.nextTick(() => { this.$el.querySelector('input.add').focus() })
       }
     },
     edit: function (newVal, oldVal) {
-      if (newVal) {
-        Vue.nextTick(() => { this.$el.querySelector('input.edit').focus() }, 0)
+      if (this.boxes.find(box => box.id === newVal)) {
+        Vue.nextTick(() => { this.$el.querySelector('input.edit').focus() })
       }
     }
   },

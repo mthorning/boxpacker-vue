@@ -3,12 +3,15 @@
     <div v-if="selectedBox">
       <input class="add" v-on:keyup="addItem" placeholder="Add Item" />
       <ul>
-        <li draggable="true" v-for="item in items" :key="item.id"
-          v-if="item.box === selectedBox" @dragstart="itemDrag(item.id, $event)"
-          @mouseleave.self="itemUnhovered"  @mouseover.self="itemHovered" >
-
-          {{ item.name }}
-
+        <li @click.stop="clickHandle(box.id)" draggable="true"
+          v-for="item in items" :key="item.id" v-if="item.box === selectedBox"
+          @dragstart="itemDrag(item.id, $event)" @mouseover.self="itemHovered"
+          @mouseleave.self="itemUnhovered" >
+          <input class="edit" v-if="edit === item.id" :value="item.name"
+            @keyup.prevent="inputMade($event, 'edit', item.id)" @blur="blurHandle" >
+          <div :id="item.id">
+            {{ item.name }}
+          </div>
           <span class="close-icon" @click="deleteItem(item.id)">Delete</span>
 
         </li>
@@ -29,16 +32,37 @@ export default {
   watch: {
     selectedBox: function (newVal, oldVal) {
       if (newVal !== oldVal && newVal !== null && !this.edit) {
-        Vue.nextTick(() => { this.$el.querySelector('input.add').focus() }, 0)
+        Vue.nextTick(() => { this.$el.querySelector('input.add').focus() })
+      }
+    },
+    edit: function (newVal, oldVal) {
+      if (this.items.find(item => item.id === newVal)) {
+        Vue.nextTick(() => { this.$el.querySelector('input.edit').focus() })
       }
     }
   },
   data () {
     return {
-      noBox: false
+      noBox: false,
+      clicks: 0
     }
   },
   methods: {
+    clickHandle (id) {
+      this.clicks++
+      if (this.clicks === 1 && !this.edit) {
+        this.timer = setTimeout(() => {
+          this.clicks = 0
+        }, 250)
+      } else {
+        clearTimeout(this.timer)
+        this.clicks = 0
+        this.$emit('editMode', id)
+      }
+    },
+    blurHandle () {
+      if (this.edit) { this.$emit('editMode', null) }
+    },
     itemHovered (e) {
       e.target.classList.add('selected')
     },
